@@ -1,0 +1,5 @@
+(library
+ (name libangou)
+ (libraries dune-build-info cbindings mirage-crypto-ec util xdg yojson)
+ (preprocess
+  (pps ppx_deriving_yojson)))

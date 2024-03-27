@@ -1,0 +1,9 @@
+; (include_subdirs unqualified)
+
+(library
+ (name cbindings)
+ (libraries)
+ (foreign_stubs
+  (language c)
+  (names caml_libc)
+  (flags (-fPIC) (-O2))))

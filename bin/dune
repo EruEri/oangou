@@ -1,0 +1,4 @@
+(executable
+ (public_name oangou)
+ (name oangou)
+ (libraries commandline))
