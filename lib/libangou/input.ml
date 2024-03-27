@@ -44,10 +44,6 @@ let ask_password ?(prompt = Prompt.master_password) () =
   | None ->
       Error.Exn.getpass_error ()
 
-let ask_password_encrypted ?(prompt = Prompt.master_password) () =
-  let _s = ask_password ~prompt () in
-  failwith ""
-
 let rec validate_input ~default_message ~error_message ~empty_line_message =
   let () = print_endline default_message in
   let s = read_line () in

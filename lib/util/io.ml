@@ -16,4 +16,23 @@
 (**********************************************************************************************)
 
 let read_file ch = really_input_string ch (in_channel_length ch)
-let content_filename string = In_channel.with_open_bin string read_file
+let readall_filename string = In_channel.with_open_bin string read_file
+
+(**
+  [read_content ?file ()] read the content of [file] if present otherwise read from [stdin]
+*)
+let read_content ?file () =
+  match file with
+  | None ->
+      In_channel.input_all stdin
+  | Some file ->
+      readall_filename file
+
+let write_content ?file content =
+  match file with
+  | None ->
+      Out_channel.output_string stdout content
+  | Some file ->
+      Out_channel.with_open_bin file (fun oc ->
+          Out_channel.output_string oc content
+      )

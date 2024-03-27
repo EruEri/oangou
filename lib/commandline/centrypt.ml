@@ -20,10 +20,63 @@ module Make
     (Dh_dsa : Mirage_crypto_ec.Dh_dsa)
     (Hash : Mirage_crypto.Hash.S) =
 struct
-  module Peers = Peers.Make (AEAD) (Dh_dsa) (Hash)
-  module Crypto = Crypto.Make (AEAD) (Hash)
-end
+  open Cmdliner
+  module LibangouI = Libangou.Make (AEAD) (Dh_dsa) (Hash)
 
-module Config = Config
-module Error = Error
-module Input = Input
+  let name = "encrypt"
+
+  type t = { infile : string option; outfile : string option; peer : string }
+
+  let term_infile =
+    Arg.(
+      value
+      & opt (some non_dir_file) None
+      & info ~docv:"<FILE>" ~doc:"Encrypt a specific file" [ "f" ]
+    )
+
+  let term_outfile =
+    Arg.(
+      value
+      & opt (some string) None
+      & info ~docv:"<OUTFILE>" ~doc:"Output the encrypt file to $(docv)" [ "o" ]
+    )
+
+  let term_peer =
+    Arg.(
+      required
+      & opt (some string) None
+      & info ~docv:"<PEER>" ~doc:"Encrypt the file for $(docv)" [ "p" ]
+    )
+
+  let term_cmd run =
+    let combine infile outfile peer = run { infile; outfile; peer } in
+    Term.(const combine $ term_infile $ term_outfile $ term_peer)
+
+  let doc = "Encrypt data"
+  let man = []
+
+  let cmd run =
+    let info = Cmd.info ~doc ~man name in
+    Cmd.v info @@ term_cmd run
+
+  let run t =
+    let () = Libangou.Config.check_initialized () in
+    let { infile; outfile; peer } = t in
+    let password = Libangou.Input.ask_password () in
+    let angou = LibangouI.Peers.load ~key:password () in
+    let shared_secret =
+      match LibangouI.Peers.shared_secret peer angou with
+      | None ->
+          Libangou.Error.Exn.unknown_peer peer
+      | Some share ->
+          share
+    in
+    let plaintext = Util.Io.read_content ?file:infile () in
+    let cypher =
+      Cstruct.to_string @@ LibangouI.Crypto.encrypt ~key:shared_secret plaintext
+    in
+    let () = Util.Io.write_content ?file:outfile cypher in
+    ()
+
+  let command = cmd run
+end

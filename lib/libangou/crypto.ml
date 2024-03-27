@@ -15,7 +15,7 @@
 (*                                                                                            *)
 (**********************************************************************************************)
 
-module Make (AEAD : Mirage_crypto.AEAD)(Hash: Mirage_crypto.Hash.S) = struct
+module Make (AEAD : Mirage_crypto.AEAD) (Hash : Mirage_crypto.Hash.S) = struct
   let uint_8_max = 256
   let iv_size = 12
 

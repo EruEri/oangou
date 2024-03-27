@@ -15,12 +15,15 @@
 (*                                                                                            *)
 (**********************************************************************************************)
 
-module Make (AEAD : Mirage_crypto.AEAD) (Dh_dsa : Mirage_crypto_ec.Dh_dsa) (Hash: Mirage_crypto.Hash.S)  =
+module Make
+    (AEAD : Mirage_crypto.AEAD)
+    (Dh_dsa : Mirage_crypto_ec.Dh_dsa)
+    (Hash : Mirage_crypto.Hash.S) =
 struct
   module PeersMap = Map.Make (String)
   module Peer = Peer.Make (Dh_dsa)
   module Keys = Keys.Make (Dh_dsa)
-  module Crypto = Crypto.Make (AEAD)(Hash)
+  module Crypto = Crypto.Make (AEAD) (Hash)
 
   type info = { public_keys : Peer.pub; shared_secret : string }
   type t = { keys : Keys.t; peers : info PeersMap.t }
@@ -70,6 +73,14 @@ struct
           (PeersMap.empty, None) serialiazed.speers
       in
       Ok { keys; peers }
+
+    let of_string string_serialiazed =
+      let yojson = Yojson.Safe.from_string string_serialiazed in
+      match s_of_yojson yojson with
+      | Error e ->
+          failwith e
+      | Ok d ->
+          deserialize d
   end
 
   let create () =
@@ -84,4 +95,26 @@ struct
     Out_channel.with_open_bin where (fun oc ->
         Out_channel.output_string oc encrypted_data
     )
+
+  let load ?(from = Config.angou_keys_file) ~key () =
+    let content = Util.Io.readall_filename from in
+    let data =
+      match Crypto.decrypt ~key content with
+      | None ->
+          failwith "Is None todo"
+      | Some data ->
+          Cstruct.to_string data
+    in
+    let peers =
+      match Serialized.of_string data with
+      | Ok d ->
+          d
+      | Error e ->
+          failwith @@ Format.asprintf "%a" Mirage_crypto_ec.pp_error e
+    in
+    peers
+
+  let shared_secret peer peers =
+    peers.peers |> PeersMap.find_opt peer
+    |> Option.map (fun info -> info.shared_secret)
 end

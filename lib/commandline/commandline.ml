@@ -15,76 +15,76 @@
 (*                                                                                            *)
 (**********************************************************************************************)
 
-module Make (AEAD : Mirage_crypto.AEAD) (Dh_dsa : Mirage_crypto_ec.Dh_dsa)(Hash: Mirage_crypto.Hash.S) =
+module Make
+    (AEAD : Mirage_crypto.AEAD)
+    (Dh_dsa : Mirage_crypto_ec.Dh_dsa)
+    (Hash : Mirage_crypto.Hash.S) =
 struct
-  
+  open Cmdliner
 
-open Cmdliner
+  type t = { change_master_password : bool } [@@unboxed]
 
-type t = { change_master_password : bool } [@@unboxed]
+  let term_change_master_password =
+    Arg.(
+      value & flag
+      & info [ "change-master-password" ] ~doc:"Change the master password"
+    )
 
-let term_change_master_password =
-  Arg.(
-    value & flag
-    & info [ "change-master-password" ] ~doc:"Change the master password"
-  )
+  let term_cmd run =
+    let combine change_master_password = run { change_master_password } in
+    Term.(const combine $ term_change_master_password)
 
-let term_cmd run =
-  let combine change_master_password = run { change_master_password } in
-  Term.(const combine $ term_change_master_password)
+  let run t =
+    let { change_master_password = _ } = t in
+    (* let () = Libcithare.Manager.check_initialized () in
+       let () =
+         match change_master_password with
+         | false ->
+             ()
+         | true ->
+             let master_password = Libcithare.Input.ask_password_encrypted () in
+             let manager = Libcithare.Manager.decrypt master_password in
+             let pass1 =
+               Libcithare.Input.ask_password
+                 ~prompt:Libcithare.Input.Prompt.master_new_password ()
+             in
+             let pass2 =
+               Libcithare.Input.ask_password
+                 ~prompt:Libcithare.Input.Prompt.master_confirm_new_password ()
+             in
+             let pass =
+               match pass1 = pass2 with
+               | true ->
+                   pass1
+               | false ->
+                   raise @@ Libcithare.Error.unmatched_password
+             in
+             let () = Libcithare.Manager.encrypt ~encrypt_key:true pass manager in
+             let () = Printf.printf "Master password sucessfully changed\n%!" in
+             ()
+       in *)
+    ()
 
-let run t =
-  let { change_master_password = _ } = t in
-  (* let () = Libcithare.Manager.check_initialized () in
-     let () =
-       match change_master_password with
-       | false ->
-           ()
-       | true ->
-           let master_password = Libcithare.Input.ask_password_encrypted () in
-           let manager = Libcithare.Manager.decrypt master_password in
-           let pass1 =
-             Libcithare.Input.ask_password
-               ~prompt:Libcithare.Input.Prompt.master_new_password ()
-           in
-           let pass2 =
-             Libcithare.Input.ask_password
-               ~prompt:Libcithare.Input.Prompt.master_confirm_new_password ()
-           in
-           let pass =
-             match pass1 = pass2 with
-             | true ->
-                 pass1
-             | false ->
-                 raise @@ Libcithare.Error.unmatched_password
-           in
-           let () = Libcithare.Manager.encrypt ~encrypt_key:true pass manager in
-           let () = Printf.printf "Master password sucessfully changed\n%!" in
-           ()
-     in *)
-  ()
+  let default = term_cmd run
+  let name = Libangou.Config.angou_name
+  let version = Libangou.Config.version
+  let doc = "A file encryptor"
 
-let default = term_cmd run
-let name = Libangou.Config.angou_name
-let version = Libangou.Config.version
-let doc = "A file encryptor"
+  let man =
+    [
+      `S Manpage.s_description;
+      `P "$(mname) is a file encryptor";
+      `P
+        "It allows you to share encrypted file on one hand and to decrypt it \
+         on the other.";
+    ]
 
-let man =
-  [
-    `S Manpage.s_description;
-    `P "$(mname) is a file encryptor";
-    `P
-      "It allows you to share encrypted file on one hand and to decrypt it on \
-       the other.";
-  ]
+  let info = Cmd.info ~doc ~version ~man name
 
-let info = Cmd.info ~doc ~version ~man name
-let subcommands = 
-  let module Cinit = Cinit.Make(AEAD)(Dh_dsa)(Hash) in
-  Cmd.group ~default info [
-  Cinit.command
-]
-let eval () = Cmd.eval ~catch:false subcommands
+  let subcommands =
+    let module Cinit = Cinit.Make (AEAD) (Dh_dsa) (Hash) in
+    let module Centrypt = Centrypt.Make (AEAD) (Dh_dsa) (Hash) in
+    Cmd.group ~default info [ Cinit.command; Centrypt.command ]
 
-
+  let eval () = Cmd.eval ~catch:false subcommands
 end

@@ -15,10 +15,13 @@
 (*                                                                                            *)
 (**********************************************************************************************)
 
-module Make (AEAD : Mirage_crypto.AEAD) (Dh_dsa : Mirage_crypto_ec.Dh_dsa)(Hash: Mirage_crypto.Hash.S) =
+module Make
+    (AEAD : Mirage_crypto.AEAD)
+    (Dh_dsa : Mirage_crypto_ec.Dh_dsa)
+    (Hash : Mirage_crypto.Hash.S) =
 struct
   open Cmdliner
-  module LibangouI = Libangou.Make (AEAD) (Dh_dsa)(Hash)
+  module LibangouI = Libangou.Make (AEAD) (Dh_dsa) (Hash)
 
   let name = "init"
 

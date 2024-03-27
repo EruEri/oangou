@@ -15,16 +15,13 @@
 (*                                                                                            *)
 (**********************************************************************************************)
 
-module AEAD = Mirage_crypto.Cipher_block.AES.GCM 
+module AEAD = Mirage_crypto.Cipher_block.AES.GCM
 module Dh_dsa = Mirage_crypto_ec.P256
 module Hash = Mirage_crypto.Hash.SHA256
-module Commandline = Commandline.Make(AEAD)(Dh_dsa)(Hash)
+module Commandline = Commandline.Make (AEAD) (Dh_dsa) (Hash)
 
 let () = Random.self_init ()
 let seed = Util.Seed.seed ()
 let g = Mirage_crypto_rng.create ~seed (module Mirage_crypto_rng.Fortuna)
 let () = Mirage_crypto_rng.set_default_generator g
-
-
-
 let () = exit @@ Commandline.eval ()
