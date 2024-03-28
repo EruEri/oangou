@@ -25,13 +25,18 @@ struct
 
   let name = "decrypt"
 
-  type t = { hexa: bool; infile : string option; outfile : string option; peer : string }
+  type t = {
+    hexa : bool;
+    infile : string option;
+    outfile : string option;
+    peer : string;
+  }
 
   let term_infile =
     Arg.(
       value
       & opt (some non_dir_file) None
-      & info ~docv:"<FILE>" ~doc:"Encrypt a specific file" ~absent:"stdin"
+      & info ~docv:"<FILE>" ~doc:"Decrypt a specific file" ~absent:"stdin"
           [ "f" ]
     )
 
@@ -47,18 +52,19 @@ struct
     Arg.(
       required
       & opt (some string) None
-      & info ~docv:"<PEER>" ~doc:"Encrypt the file for $(docv)" [ "p" ]
+      & info ~docv:"<PEER>" ~doc:"Decrypt the file for $(docv)" [ "p" ]
     )
 
   let term_hexadecimal =
-    Arg.(
-      value & flag
-      & info ~doc:"Treat input as a hexadecimal string" [ "x" ]
-    )
+    Arg.(value & flag & info ~doc:"Treat input as a hexadecimal string" [ "x" ])
 
   let term_cmd run =
-    let combine hexa infile outfile peer = run {hexa; infile; outfile; peer } in
-    Term.(const combine $ term_hexadecimal $ term_infile $ term_outfile $ term_peer)
+    let combine hexa infile outfile peer =
+      run { hexa; infile; outfile; peer }
+    in
+    Term.(
+      const combine $ term_hexadecimal $ term_infile $ term_outfile $ term_peer
+    )
 
   let doc = "Decrypt data"
   let man = []

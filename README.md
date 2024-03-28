@@ -96,13 +96,13 @@ SYNOPSIS
 
 OPTIONS
        -f <FILE> (absent=stdin)
-           Encrypt a specific file
+           Decrypt a specific file
 
        -o <OUTFILE> (absent=stdout)
            Output the encrypt file to <OUTFILE>
 
        -p <PEER> (required)
-           Encrypt the file for <PEER>
+           Decrypt the file for <PEER>
 
        -x  Treat input as a hexadecimal string
 ```
@@ -111,7 +111,7 @@ OPTIONS
 
 Alice wants to send the message "Hello bob from alice" to Bob.
 
-The exemples assumes that Alice and Bob know the public key of the other one. 
+This exemple assumes that Alice and Bob know the public key of the other one. 
 
 ```
 # Alice 
@@ -129,5 +129,5 @@ $ echo "<an_hexadecimal_string>" | oangou decrypt -x -p alice
 
 ## Warning
 
-My knownledge on cryptographic is quite limited and don't knwon if what is do is really that safe are useful so use it at your own risk.
+My knownledge on cryptographic is quite limited and don't know if what I do is really that safe or useful so use it at your own risk.
 

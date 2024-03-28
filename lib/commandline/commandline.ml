@@ -87,6 +87,7 @@ struct
     let module Cadd = Cadd.Make (AEAD) (Dh_dsa) (Hash) in
     let module Cdecrypt = Cdecrypt.Make (AEAD) (Dh_dsa) (Hash) in
     let module Cexport = Cexport.Make (AEAD) (Dh_dsa) (Hash) in
+    let module Clist = Clist.Make (AEAD) (Dh_dsa) (Hash) in
     Cmd.group ~default info
       [
         Cinit.command;
@@ -94,6 +95,7 @@ struct
         Cadd.command;
         Cdecrypt.command;
         Cexport.command;
+        Clist.command;
       ]
 
   let eval () = Cmd.eval ~catch:true subcommands

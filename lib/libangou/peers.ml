@@ -126,6 +126,9 @@ struct
     in
     to_string cstruct
 
+  let peers_name angou =
+    angou.peers |> PeersMap.to_seq |> Seq.map fst |> List.of_seq
+
   let save ?(where = Config.angou_keys_file) ~key t =
     let data = Serialized.to_string_serialiaze t in
     let data = Crypto.encrypt ~key data in

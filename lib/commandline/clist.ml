@@ -23,86 +23,39 @@ struct
   open Cmdliner
   module LibangouI = Libangou.Make (AEAD) (Dh_dsa) (Hash)
 
-  let name = "encrypt"
+  let name = "list"
 
-  type t = {
-    hexa : bool;
-    infile : string option;
-    outfile : string option;
-    peer : string;
-  }
-
-  let term_infile =
-    Arg.(
-      value
-      & opt (some non_dir_file) None
-      & info ~docv:"<FILE>" ~doc:"Encrypt a specific file" ~absent:"stdin"
-          [ "f" ]
-    )
-
-  let term_outfile =
-    Arg.(
-      value
-      & opt (some string) None
-      & info ~docv:"<OUTFILE>" ~doc:"Output the encrypt file to $(docv)"
-          ~absent:"stdout" [ "o" ]
-    )
-
-  let term_peer =
-    Arg.(
-      required
-      & opt (some string) None
-      & info ~docv:"<PEER>" ~doc:"Encrypt the file for $(docv)" [ "p" ]
-    )
-
-  let term_hexadecimal =
-    Arg.(value & flag & info ~doc:"Output as a hexadecimal string" [ "x" ])
+  type t = unit
 
   let term_cmd run =
-    let combine hexa infile outfile peer =
-      run { hexa; infile; outfile; peer }
-    in
-    Term.(
-      const combine $ term_hexadecimal $ term_infile $ term_outfile $ term_peer
-    )
+    let combine () = run () in
+    Term.(const combine $ const ())
 
-  let doc = "Encrypt data"
+  let doc = "List known peers"
   let man = []
 
   let cmd run =
     let info = Cmd.info ~doc ~man name in
     Cmd.v info @@ term_cmd run
 
-  let run t =
+  let run () =
     let () = Libangou.Config.check_initialized () in
-    let { hexa; infile; outfile; peer } = t in
     let password = Libangou.Input.ask_password () in
     let angou = LibangouI.Peers.load ~key:password () in
     let result =
       Result.map
         (fun angou ->
-          let shared_secret =
-            match LibangouI.Peers.shared_secret peer angou with
-            | None ->
-                Libangou.Error.Exn.unknown_peer peer
-            | Some share ->
-                share
-          in
-          let plaintext = Util.Io.read_content ?file:infile () in
-          let cypher =
-            Util.Ustring.of_cstruct ~hexa
-            @@ LibangouI.Crypto.encrypt ~key:shared_secret plaintext
-          in
-          Util.Io.write_content ?file:outfile cypher
+          let names = LibangouI.Peers.peers_name angou in
+          List.iter (Printf.printf "- %s\n") names
         )
         angou
     in
     let () =
       match result with
-      | Ok () ->
-          ()
       | Error e ->
           Libangou.Error.Exn.mirage_crypto_error e
+      | Ok () ->
+          ()
     in
     ()
 
