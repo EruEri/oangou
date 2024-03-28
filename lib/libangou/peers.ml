@@ -25,6 +25,7 @@ struct
   module Keys = Keys.Make (Dh_dsa)
   module Crypto = Crypto.Make (AEAD) (Hash)
 
+  (*shared_secret hex format*)
   type info = { public_key : Peer.pub; shared_secret : string }
   type t = { keys : Keys.t; peers : info PeersMap.t }
 
@@ -88,20 +89,42 @@ struct
     let peers = PeersMap.empty in
     { keys; peers }
 
-  let add name public_key angou =
+  let add ?(hexa = false) name public_key angou =
     let ( let* ) = Result.bind in
-    let* public_key =
-      Dh_dsa.Dsa.pub_of_cstruct @@ Cstruct.of_string public_key
+    let of_string cstruct =
+      match hexa with
+      | true ->
+          Cstruct.of_hex cstruct
+      | false ->
+          Cstruct.of_string cstruct
     in
+    let* public_key = Dh_dsa.Dsa.pub_of_cstruct @@ of_string public_key in
     let cpublic_key = Dh_dsa.Dsa.pub_to_cstruct public_key in
     let* secret, _ =
       Dh_dsa.Dh.secret_of_cs @@ Dh_dsa.Dsa.priv_to_cstruct @@ angou.keys.priv
     in
     let* shared_secret = Dh_dsa.Dh.key_exchange secret cpublic_key in
-    let shared_secret = Cstruct.to_string shared_secret in
+    let shared_secret = Cstruct.to_hex_string shared_secret in
     let info = { shared_secret; public_key } in
     let peers = PeersMap.add name info angou.peers in
     Ok { angou with peers }
+
+  let raw_key ?(hexa = false) ?(private_key = false) angou =
+    let to_string cstruct =
+      match hexa with
+      | true ->
+          Cstruct.to_hex_string cstruct
+      | false ->
+          Cstruct.to_string cstruct
+    in
+    let cstruct =
+      match private_key with
+      | true ->
+          Dh_dsa.Dsa.priv_to_cstruct angou.keys.priv
+      | false ->
+          Dh_dsa.Dsa.pub_to_cstruct angou.keys.pub
+    in
+    to_string cstruct
 
   let save ?(where = Config.angou_keys_file) ~key t =
     let data = Serialized.to_string_serialiaze t in
@@ -124,5 +147,7 @@ struct
 
   let shared_secret peer peers =
     peers.peers |> PeersMap.find_opt peer
-    |> Option.map (fun info -> info.shared_secret)
+    |> Option.map (fun info ->
+           Cstruct.to_hex_string @@ Cstruct.of_hex info.shared_secret
+       )
 end

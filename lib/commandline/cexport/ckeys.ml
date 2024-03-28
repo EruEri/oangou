@@ -23,36 +23,36 @@ struct
   open Cmdliner
   module LibangouI = Libangou.Make (AEAD) (Dh_dsa) (Hash)
 
-  let name = "add"
+  let name = "keys"
 
-  type t = { public_key : string option; hexa : bool; peer : string }
+  type t = { hexa : bool; private_key : bool; outfile : string option }
 
-  let term_peer =
-    Arg.(
-      required
-      & opt (some string) None
-      & info ~docv:"<PEER>" ~doc:"Add $(docv) to known peers" [ "p" ]
-    )
-
-  let term_public_key =
+  let term_outfile =
     Arg.(
       value
-      & opt (some non_dir_file) None
-      & info ~docv:"<PUBLIC_KEY>" ~doc:"Associate $(docv) to <PEER>"
-          ~absent:"stdin" [ "k" ]
+      & opt (some string) None
+      & info ~docv:"<OUTFILE>" ~doc:"Output the key to $(docv)" ~absent:"stdout"
+          [ "o" ]
+    )
+
+  let term_private_keys =
+    Arg.(
+      value & flag
+      & info ~doc:"Output the private key instead" ~absent:"public"
+          [ "private" ]
     )
 
   let term_hexadecimal =
     Arg.(
       value & flag
-      & info ~doc:"Treat the input key as a hexadecimal string" [ "x" ]
+      & info ~doc:"Output in a hexadecimal string representation" [ "x" ]
     )
 
   let term_cmd run =
-    let combine hexa public_key peer = run { hexa; public_key; peer } in
-    Term.(const combine $ term_hexadecimal $ term_public_key $ term_peer)
+    let combine hexa outfile private_key = run { hexa; outfile; private_key } in
+    Term.(const combine $ term_hexadecimal $ term_outfile $ term_private_keys)
 
-  let doc = "Add peers"
+  let doc = "Export keys from $(mname)"
   let man = []
 
   let cmd run =
@@ -61,22 +61,24 @@ struct
 
   let run t =
     let () = Libangou.Config.check_initialized () in
-    let { public_key; peer; hexa } = t in
+    let { hexa; private_key; outfile } = t in
     let password = Libangou.Input.ask_password () in
-    let public_key = Util.Io.read_content ?file:public_key () in
-    let ( >>= ) = Result.bind in
-    let angou =
-      LibangouI.Peers.load ~key:password ()
-      >>= LibangouI.Peers.add ~hexa peer public_key
+    let angou = LibangouI.Peers.load ~key:password () in
+    let result =
+      Result.map
+        (fun angou ->
+          let raw_key = LibangouI.Peers.raw_key ~hexa ~private_key angou in
+          Util.Io.write_content ?file:outfile raw_key
+        )
+        angou
     in
-    let angou =
-      match angou with
-      | Ok angou ->
-          angou
-      | Error mirage_error ->
-          Libangou.Error.Exn.mirage_crypto_error mirage_error
+    let () =
+      match result with
+      | Ok () ->
+          ()
+      | Error e ->
+          Libangou.Error.Exn.mirage_crypto_error e
     in
-    let _ = LibangouI.Peers.save ~key:password angou in
     ()
 
   let command = cmd run

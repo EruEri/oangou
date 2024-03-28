@@ -23,61 +23,12 @@ struct
   open Cmdliner
   module LibangouI = Libangou.Make (AEAD) (Dh_dsa) (Hash)
 
-  let name = "add"
-
-  type t = { public_key : string option; hexa : bool; peer : string }
-
-  let term_peer =
-    Arg.(
-      required
-      & opt (some string) None
-      & info ~docv:"<PEER>" ~doc:"Add $(docv) to known peers" [ "p" ]
-    )
-
-  let term_public_key =
-    Arg.(
-      value
-      & opt (some non_dir_file) None
-      & info ~docv:"<PUBLIC_KEY>" ~doc:"Associate $(docv) to <PEER>"
-          ~absent:"stdin" [ "k" ]
-    )
-
-  let term_hexadecimal =
-    Arg.(
-      value & flag
-      & info ~doc:"Treat the input key as a hexadecimal string" [ "x" ]
-    )
-
-  let term_cmd run =
-    let combine hexa public_key peer = run { hexa; public_key; peer } in
-    Term.(const combine $ term_hexadecimal $ term_public_key $ term_peer)
-
-  let doc = "Add peers"
+  let name = "export"
+  let doc = "export information from $(iname)"
   let man = []
+  let info = Cmd.info ~doc name
 
-  let cmd run =
-    let info = Cmd.info ~doc ~man name in
-    Cmd.v info @@ term_cmd run
-
-  let run t =
-    let () = Libangou.Config.check_initialized () in
-    let { public_key; peer; hexa } = t in
-    let password = Libangou.Input.ask_password () in
-    let public_key = Util.Io.read_content ?file:public_key () in
-    let ( >>= ) = Result.bind in
-    let angou =
-      LibangouI.Peers.load ~key:password ()
-      >>= LibangouI.Peers.add ~hexa peer public_key
-    in
-    let angou =
-      match angou with
-      | Ok angou ->
-          angou
-      | Error mirage_error ->
-          Libangou.Error.Exn.mirage_crypto_error mirage_error
-    in
-    let _ = LibangouI.Peers.save ~key:password angou in
-    ()
-
-  let command = cmd run
+  let command =
+    let module Ckeys = Ckeys.Make (AEAD) (Dh_dsa) (Hash) in
+    Cmd.group info [ Ckeys.command ]
 end
