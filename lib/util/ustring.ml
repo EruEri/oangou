@@ -34,3 +34,13 @@ let truncate n s =
   else
     let subs = String.sub s 0 n in
     Printf.sprintf "%s..." subs
+
+let of_cstruct ?(hexa = false) cstruct = 
+  match hexa with
+  | true -> Cstruct.to_hex_string cstruct
+  | false -> Cstruct.to_string cstruct
+
+let of_string ?(hexa = false) string = 
+  match hexa with
+  | true -> Cstruct.to_string @@ Cstruct.of_hex string
+  | false -> string

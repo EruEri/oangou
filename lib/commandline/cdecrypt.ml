@@ -25,7 +25,7 @@ struct
 
   let name = "decrypt"
 
-  type t = { infile : string option; outfile : string option; peer : string }
+  type t = { hexa: bool; infile : string option; outfile : string option; peer : string }
 
   let term_infile =
     Arg.(
@@ -50,9 +50,15 @@ struct
       & info ~docv:"<PEER>" ~doc:"Encrypt the file for $(docv)" [ "p" ]
     )
 
+  let term_hexadecimal =
+    Arg.(
+      value & flag
+      & info ~doc:"Treat input as a hexadecimal string" [ "x" ]
+    )
+
   let term_cmd run =
-    let combine infile outfile peer = run { infile; outfile; peer } in
-    Term.(const combine $ term_infile $ term_outfile $ term_peer)
+    let combine hexa infile outfile peer = run {hexa; infile; outfile; peer } in
+    Term.(const combine $ term_hexadecimal $ term_infile $ term_outfile $ term_peer)
 
   let doc = "Decrypt data"
   let man = []
@@ -63,7 +69,7 @@ struct
 
   let run t =
     let () = Libangou.Config.check_initialized () in
-    let { infile; outfile; peer } = t in
+    let { hexa; infile; outfile; peer } = t in
     let password = Libangou.Input.ask_password () in
     let angou = LibangouI.Peers.load ~key:password () in
     let result =
@@ -77,6 +83,7 @@ struct
                 share
           in
           let cypher = Util.Io.read_content ?file:infile () in
+          let cypher = Util.Ustring.of_string ~hexa cypher in
           Option.map (fun cplaintext ->
               Util.Io.write_content ?file:outfile
               @@ Cstruct.to_string cplaintext
