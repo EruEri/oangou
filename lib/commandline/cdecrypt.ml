@@ -23,7 +23,7 @@ struct
   open Cmdliner
   module LibangouI = Libangou.Make (AEAD) (Dh_dsa) (Hash)
 
-  let name = "encrypt"
+  let name = "decrypt"
 
   type t = { infile : string option; outfile : string option; peer : string }
 
@@ -54,45 +54,13 @@ struct
     let combine infile outfile peer = run { infile; outfile; peer } in
     Term.(const combine $ term_infile $ term_outfile $ term_peer)
 
-  let doc = "Encrypt data"
+  let doc = "Decrypt data"
   let man = []
 
   let cmd run =
     let info = Cmd.info ~doc ~man name in
     Cmd.v info @@ term_cmd run
 
-  let run t =
-    let () = Libangou.Config.check_initialized () in
-    let { infile; outfile; peer } = t in
-    let password = Libangou.Input.ask_password () in
-    let angou = LibangouI.Peers.load ~key:password () in
-    let result =
-      Result.map
-        (fun angou ->
-          let shared_secret =
-            match LibangouI.Peers.shared_secret peer angou with
-            | None ->
-                Libangou.Error.Exn.unknown_peer peer
-            | Some share ->
-                share
-          in
-          let plaintext = Util.Io.read_content ?file:infile () in
-          let cypher =
-            Cstruct.to_string
-            @@ LibangouI.Crypto.encrypt ~key:shared_secret plaintext
-          in
-          Util.Io.write_content ?file:outfile cypher
-        )
-        angou
-    in
-    let () =
-      match result with
-      | Ok () ->
-          ()
-      | Error e ->
-          Libangou.Error.Exn.mirage_crypto_error e
-    in
-    ()
-
+  let run _ = ()
   let command = cmd run
 end

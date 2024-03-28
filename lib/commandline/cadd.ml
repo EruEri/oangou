@@ -38,7 +38,8 @@ struct
     Arg.(
       value
       & opt (some non_dir_file) None
-      & info ~docv:"<PUBLIC_KEY>" ~doc:"Associate $(docv) to <PEER>" [ "k" ]
+      & info ~docv:"<PUBLIC_KEY>" ~doc:"Associate $(docv) to <PEER>"
+          ~absent:"stdin" [ "k" ]
     )
 
   let term_cmd run =

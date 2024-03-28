@@ -1,19 +1,21 @@
-(lang dune 3.14)
+(lang dune 3.10)
 
 (name oangou)
 
 (generate_opam_files true)
 
+(version "0.1.0")
+
 (source
- (github username/reponame))
+ (github EruEri/oangou))
 
-(authors "Author Name")
+(authors "EruEri")
 
-(maintainers "Maintainer Name")
+(maintainers "EruEri")
 
-(license LICENSE)
+(license GPL-3.0)
 
-(documentation https://url/to/documentation)
+; (documentation https://url/to/documentation)
 
 (package
  (name oangou)
