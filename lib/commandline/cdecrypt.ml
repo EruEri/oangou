@@ -61,6 +61,40 @@ struct
     let info = Cmd.info ~doc ~man name in
     Cmd.v info @@ term_cmd run
 
-  let run _ = ()
+  let run t =
+    let () = Libangou.Config.check_initialized () in
+    let { infile; outfile; peer } = t in
+    let password = Libangou.Input.ask_password () in
+    let angou = LibangouI.Peers.load ~key:password () in
+    let result =
+      Result.map
+        (fun angou ->
+          let shared_secret =
+            match LibangouI.Peers.shared_secret peer angou with
+            | None ->
+                Libangou.Error.Exn.unknown_peer peer
+            | Some share ->
+                share
+          in
+          let cypher = Util.Io.read_content ?file:infile () in
+          Option.map (fun cplaintext ->
+              Util.Io.write_content ?file:outfile
+              @@ Cstruct.to_string cplaintext
+          )
+          @@ LibangouI.Crypto.decrypt ~key:shared_secret cypher
+        )
+        angou
+    in
+    let () =
+      match result with
+      | Error e ->
+          Libangou.Error.Exn.mirage_crypto_error e
+      | Ok None ->
+          failwith "Fail to decrypt"
+      | Ok (Some ()) ->
+          ()
+    in
+    ()
+
   let command = cmd run
 end
