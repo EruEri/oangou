@@ -23,38 +23,29 @@ struct
   open Cmdliner
   module LibangouI = Libangou.Make (AEAD) (Dh_dsa) (Hash)
 
-  let name = "encrypt"
+  let name = "add"
 
-  type t = { infile : string option; outfile : string option; peer : string }
-
-  let term_infile =
-    Arg.(
-      value
-      & opt (some non_dir_file) None
-      & info ~docv:"<FILE>" ~doc:"Encrypt a specific file" [ "f" ]
-    )
-
-  let term_outfile =
-    Arg.(
-      value
-      & opt (some string) None
-      & info ~docv:"<OUTFILE>" ~doc:"Output the encrypt file to $(docv)"
-          ~absent:"stdin" [ "o" ]
-    )
+  type t = { public_key : string option; peer : string }
 
   let term_peer =
     Arg.(
       required
       & opt (some string) None
-      & info ~docv:"<PEER>" ~doc:"Encrypt the file for $(docv)" ~absent:"stdout"
-          [ "p" ]
+      & info ~docv:"<PEER>" ~doc:"Add $(docv) to known peers" [ "p" ]
+    )
+
+  let term_public_key =
+    Arg.(
+      value
+      & opt (some non_dir_file) None
+      & info ~docv:"<PUBLIC_KEY>" ~doc:"Associate $(docv) to <PEER>" [ "k" ]
     )
 
   let term_cmd run =
-    let combine infile outfile peer = run { infile; outfile; peer } in
-    Term.(const combine $ term_infile $ term_outfile $ term_peer)
+    let combine public_key peer = run { public_key; peer } in
+    Term.(const combine $ term_public_key $ term_peer)
 
-  let doc = "Encrypt data"
+  let doc = "Add peers"
   let man = []
 
   let cmd run =
@@ -63,35 +54,22 @@ struct
 
   let run t =
     let () = Libangou.Config.check_initialized () in
-    let { infile; outfile; peer } = t in
+    let { public_key; peer } = t in
     let password = Libangou.Input.ask_password () in
-    let angou = LibangouI.Peers.load ~key:password () in
-    let result =
-      Result.map
-        (fun angou ->
-          let shared_secret =
-            match LibangouI.Peers.shared_secret peer angou with
-            | None ->
-                Libangou.Error.Exn.unknown_peer peer
-            | Some share ->
-                share
-          in
-          let plaintext = Util.Io.read_content ?file:infile () in
-          let cypher =
-            Cstruct.to_string
-            @@ LibangouI.Crypto.encrypt ~key:shared_secret plaintext
-          in
-          Util.Io.write_content ?file:outfile cypher
-        )
-        angou
+    let public_key = Util.Io.read_content ?file:public_key () in
+    let ( >>= ) = Result.bind in
+    let angou =
+      LibangouI.Peers.load ~key:password ()
+      >>= LibangouI.Peers.add peer public_key
     in
-    let () =
-      match result with
-      | Ok () ->
-          ()
-      | Error e ->
-          Libangou.Error.Exn.mirage_crypto_error e
+    let angou =
+      match angou with
+      | Ok angou ->
+          angou
+      | Error mirage_error ->
+          Libangou.Error.Exn.mirage_crypto_error mirage_error
     in
+    let _ = LibangouI.Peers.save ~key:password angou in
     ()
 
   let command = cmd run

@@ -84,7 +84,8 @@ struct
   let subcommands =
     let module Cinit = Cinit.Make (AEAD) (Dh_dsa) (Hash) in
     let module Centrypt = Centrypt.Make (AEAD) (Dh_dsa) (Hash) in
-    Cmd.group ~default info [ Cinit.command; Centrypt.command ]
+    let module Cadd = Cadd.Make (AEAD) (Dh_dsa) (Hash) in
+    Cmd.group ~default info [ Cinit.command; Centrypt.command; Cadd.command ]
 
   let eval () = Cmd.eval ~catch:false subcommands
 end

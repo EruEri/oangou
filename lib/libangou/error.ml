@@ -21,6 +21,7 @@ type angou_error =
   | GetPasswordError
   | PasswordNotMatched
   | UnknwonPeer of string
+  | MirageCryptoError of Mirage_crypto_ec.error
 
 exception AngouError of angou_error
 
@@ -31,4 +32,5 @@ module Exn = struct
   let getpass_error () = raise @@ angou_error GetPasswordError
   let password_not_matched () = raise @@ angou_error PasswordNotMatched
   let unknown_peer name = raise @@ angou_error @@ UnknwonPeer name
+  let mirage_crypto_error e = raise @@ angou_error @@ MirageCryptoError e
 end

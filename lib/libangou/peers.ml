@@ -25,7 +25,7 @@ struct
   module Keys = Keys.Make (Dh_dsa)
   module Crypto = Crypto.Make (AEAD) (Hash)
 
-  type info = { public_keys : Peer.pub; shared_secret : string }
+  type info = { public_key : Peer.pub; shared_secret : string }
   type t = { keys : Keys.t; peers : info PeersMap.t }
 
   module Serialized = struct
@@ -41,7 +41,7 @@ struct
         peers.peers |> PeersMap.to_seq
         |> Seq.map (fun (name, info) ->
                let spub =
-                 Cstruct.to_string @@ Dh_dsa.Dsa.pub_to_cstruct info.public_keys
+                 Cstruct.to_string @@ Dh_dsa.Dsa.pub_to_cstruct info.public_key
                in
                let shared_secret = info.shared_secret in
                Peer.Serialized.{ sname = name; spub; shared_secret }
@@ -62,8 +62,8 @@ struct
             let name = peer.sname in
             let shared_secret = peer.shared_secret in
             match Dh_dsa.Dsa.pub_of_cstruct @@ Cstruct.of_string peer.spub with
-            | Ok public_keys ->
-                let info = { public_keys; shared_secret } in
+            | Ok public_key ->
+                let info = { public_key; shared_secret } in
                 let peers = PeersMap.add name info peers in
                 (peers, errors)
             | Error e ->
@@ -88,6 +88,21 @@ struct
     let peers = PeersMap.empty in
     { keys; peers }
 
+  let add name public_key angou =
+    let ( let* ) = Result.bind in
+    let* public_key =
+      Dh_dsa.Dsa.pub_of_cstruct @@ Cstruct.of_string public_key
+    in
+    let cpublic_key = Dh_dsa.Dsa.pub_to_cstruct public_key in
+    let* secret, _ =
+      Dh_dsa.Dh.secret_of_cs @@ Dh_dsa.Dsa.priv_to_cstruct @@ angou.keys.priv
+    in
+    let* shared_secret = Dh_dsa.Dh.key_exchange secret cpublic_key in
+    let shared_secret = Cstruct.to_string shared_secret in
+    let info = { shared_secret; public_key } in
+    let peers = PeersMap.add name info angou.peers in
+    Ok { angou with peers }
+
   let save ?(where = Config.angou_keys_file) ~key t =
     let data = Serialized.to_string_serialiaze t in
     let data = Crypto.encrypt ~key data in
@@ -105,14 +120,7 @@ struct
       | Some data ->
           Cstruct.to_string data
     in
-    let peers =
-      match Serialized.of_string data with
-      | Ok d ->
-          d
-      | Error e ->
-          failwith @@ Format.asprintf "%a" Mirage_crypto_ec.pp_error e
-    in
-    peers
+    Serialized.of_string data
 
   let shared_secret peer peers =
     peers.peers |> PeersMap.find_opt peer
