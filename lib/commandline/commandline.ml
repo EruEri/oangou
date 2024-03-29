@@ -1,6 +1,6 @@
 (**********************************************************************************************)
 (*                                                                                            *)
-(* This file is part of oangou: a file encryptor                                              *)
+(* This file is part of oangou: a content encryptor                                           *)
 (* Copyright (C) 2024 Yves Ndiaye                                                             *)
 (*                                                                                            *)
 (* oangou is free software: you can redistribute it and/or modify it under the terms          *)
@@ -73,7 +73,7 @@ struct
   let man =
     [
       `S Manpage.s_description;
-      `P "$(mname) is a file encryptor";
+      `P "$(mname) is a content encryptor";
       `P
         "It allows you to share encrypted file on one hand and to decrypt it \
          on the other.";

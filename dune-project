@@ -19,9 +19,12 @@
 
 (package
  (name oangou)
- (synopsis "A short synopsis")
- (description "A longer description")
- (depends ocaml dune)
+ (synopsis "A content encryptor")
+ (description "Oangou is a encryption tool. \
+ It allows to encrypt content and share it with a peer. \
+ It uses the Elliptic curve Diffie–Hellman to generate a public/private keys \
+ and the generated shared secret with the public keys of the peer")
+ (depends ocaml dune cmdliner  (ppx_deriving_yojson (>= "3.5.3")) (yojson (>= "2.0.0")) (cmdliner (>= "1.1.0")) mirage_crypto_ec xdg)
  (tags
   (topics "to describe" your project)))
 
