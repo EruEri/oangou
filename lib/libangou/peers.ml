@@ -153,4 +153,8 @@ struct
     |> Option.map (fun info ->
            Cstruct.to_hex_string @@ Cstruct.of_hex info.shared_secret
        )
+
+  let partition f angou = 
+    let (deleted, peers) = PeersMap.partition f angou.peers in
+    deleted, {angou with peers}
 end
