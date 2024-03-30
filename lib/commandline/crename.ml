@@ -23,42 +23,52 @@ struct
   open Cmdliner
   module LibangouI = Libangou.Make (AEAD) (Dh_dsa) (Hash)
 
-  let name = "delete"
+  let name = "rename"
 
-  type t = { peers : string list }
+  type t = { old_name : string; new_name : string }
 
-  let term_peers =
+  let term_old_name =
     Arg.(
-      value & pos_all string [] & info ~docv:"<PEERS>" ~doc:"Peers to delete" []
+      required
+      & pos 0 (some string) None
+      & info ~docv:"<OLD_NAME>" ~doc:"Name to rename" []
+    )
+
+  let term_new_name =
+    Arg.(
+      required
+      & pos 1 (some string) None
+      & info ~docv:"<NEW_NAME>" ~doc:"New name of the peer" []
     )
 
   let term_cmd run =
-    let combine peers = run { peers } in
-    Term.(const combine $ term_peers)
+    let combine old_name new_name = run { old_name; new_name } in
+    Term.(const combine $ term_old_name $ term_new_name)
 
-  let doc = "Delete peers"
+  let doc = "Rename peer"
   let man = []
 
   let cmd run =
     let info = Cmd.info ~doc ~man name in
     Cmd.v info @@ term_cmd run
 
-  let exec ~key peers angou =
-    let { peers } = peers in
-    let deleted, angou =
-      LibangouI.Peers.partition (fun s _ -> List.mem s peers) angou
-    in
-    match LibangouI.Peers.PeersMap.is_empty deleted with
-    | true ->
-        Printf.eprintf "No peers deleted"
-    | false ->
+  let exec ~key old_name new_name angou =
+    let angou, change = LibangouI.Peers.rename old_name new_name angou in
+    let () =
+      if change then
+        let () = Printf.eprintf "%s ---> %s\n" old_name new_name in
         LibangouI.Peers.save ~key angou
+      else
+        Printf.eprintf "%s is unchanged\n" Libangou.Config.angou_name
+    in
+    ()
 
   let run t =
     let () = Libangou.Config.check_initialized () in
+    let { old_name; new_name } = t in
     let password = Libangou.Input.ask_password () in
     let angou = LibangouI.Peers.load ~key:password () in
-    let result = Result.map (exec ~key:password t) angou in
+    let result = Result.map (exec ~key:password old_name new_name) angou in
     let () =
       match result with
       | Ok () ->

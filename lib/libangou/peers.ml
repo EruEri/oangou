@@ -154,7 +154,22 @@ struct
            Cstruct.to_hex_string @@ Cstruct.of_hex info.shared_secret
        )
 
-  let partition f angou = 
-    let (deleted, peers) = PeersMap.partition f angou.peers in
-    deleted, {angou with peers}
+  let partition f angou =
+    let deleted, peers = PeersMap.partition f angou.peers in
+    (deleted, { angou with peers })
+
+  let rename old_name new_name angou =
+    let { keys; peers } = angou in
+    let value = PeersMap.find_opt old_name peers in
+    let peers = PeersMap.remove old_name peers in
+    let peers =
+      Option.fold ~none:peers
+        ~some:(fun info -> PeersMap.add new_name info peers)
+        value
+    in
+    let has_changed = not (angou.peers == peers) in
+    if has_changed then
+      ({ keys; peers }, has_changed)
+    else
+      (angou, false)
 end

@@ -82,13 +82,14 @@ struct
   let info = Cmd.info ~doc ~version ~man name
 
   let subcommands =
-    let module Cinit = Cinit.Make (AEAD) (Dh_dsa) (Hash) in
-    let module Centrypt = Centrypt.Make (AEAD) (Dh_dsa) (Hash) in
     let module Cadd = Cadd.Make (AEAD) (Dh_dsa) (Hash) in
     let module Cdecrypt = Cdecrypt.Make (AEAD) (Dh_dsa) (Hash) in
+    let module Cdelete = Cdelete.Make (AEAD) (Dh_dsa) (Hash) in
+    let module Centrypt = Centrypt.Make (AEAD) (Dh_dsa) (Hash) in
     let module Cexport = Cexport.Make (AEAD) (Dh_dsa) (Hash) in
     let module Clist = Clist.Make (AEAD) (Dh_dsa) (Hash) in
-    let module Cdelete = Cdelete.Make (AEAD) (Dh_dsa) (Hash) in
+    let module Cinit = Cinit.Make (AEAD) (Dh_dsa) (Hash) in
+    let module Crename = Crename.Make (AEAD) (Dh_dsa) (Hash) in
     Cmd.group ~default info
       [
         Cinit.command;
@@ -97,7 +98,8 @@ struct
         Cdecrypt.command;
         Cexport.command;
         Clist.command;
-        Cdelete.command
+        Cdelete.command;
+        Crename.command;
       ]
 
   let eval () = Cmd.eval ~catch:true subcommands
