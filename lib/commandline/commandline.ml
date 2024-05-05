@@ -104,16 +104,7 @@ struct
         );
     ]
 
-  let exits =
-    [
-      Cmd.Exit.info ~doc:"on success." Libangou.ExitCode.angou_success;
-      Cmd.Exit.info ~doc:"on $(mname) errors." Libangou.ExitCode.angou_error;
-      Cmd.Exit.info ~doc:"on internal errors." Libangou.ExitCode.any_other_error;
-      Cmd.Exit.info ~doc:"on command line parsing errors."
-        Libangou.ExitCode.angou_parsing_options_error;
-    ]
-
-  let info = Cmd.info ~exits ~doc ~version ~man name
+  let info = Cmd.info ~exits:Ccommon.exits ~doc ~version ~man name
 
   let subcommands =
     let module Cadd = Cadd.Make (AEAD) (Dh_dsa) (Hash) in

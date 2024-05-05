@@ -70,7 +70,7 @@ struct
   let man = []
 
   let cmd run =
-    let info = Cmd.info ~doc ~man name in
+    let info = Cmd.info ~exits:Ccommon.exits ~doc ~man name in
     Cmd.v info @@ term_cmd run
 
   let run t =
@@ -103,7 +103,7 @@ struct
       | Error e ->
           Libangou.Error.Exn.angou_error_raise e
       | Ok None ->
-          failwith "Fail to decrypt"
+          Libangou.Error.Exn.decrypt_message ()
       | Ok (Some ()) ->
           ()
     in

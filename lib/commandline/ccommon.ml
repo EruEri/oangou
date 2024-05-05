@@ -15,49 +15,13 @@
 (*                                                                                            *)
 (**********************************************************************************************)
 
-module Make
-    (AEAD : Mirage_crypto.AEAD)
-    (Dh_dsa : Mirage_crypto_ec.Dh_dsa)
-    (Hash : Mirage_crypto.Hash.S) =
-struct
-  open Cmdliner
-  module LibangouI = Libangou.Make (AEAD) (Dh_dsa) (Hash)
+open Cmdliner
 
-  let name = "list"
-
-  type t = unit
-
-  let term_cmd run =
-    let combine () = run () in
-    Term.(const combine $ const ())
-
-  let doc = "List known peers"
-  let man = []
-
-  let cmd run =
-    let info = Cmd.info ~exits:Ccommon.exits ~doc ~man name in
-    Cmd.v info @@ term_cmd run
-
-  let run () =
-    let () = Libangou.Config.check_initialized () in
-    let password = Libangou.Input.ask_password () in
-    let angou = LibangouI.Peers.load ~key:password () in
-    let result =
-      Result.map
-        (fun angou ->
-          let names = LibangouI.Peers.peers_name angou in
-          List.iter (Printf.printf "- %s\n") names
-        )
-        angou
-    in
-    let () =
-      match result with
-      | Error e ->
-          Libangou.Error.Exn.angou_error_raise e
-      | Ok () ->
-          ()
-    in
-    ()
-
-  let command = cmd run
-end
+let exits =
+  [
+    Cmd.Exit.info ~doc:"on success." Libangou.ExitCode.angou_success;
+    Cmd.Exit.info ~doc:"on $(mname) errors." Libangou.ExitCode.angou_error;
+    Cmd.Exit.info ~doc:"on internal errors." Libangou.ExitCode.any_other_error;
+    Cmd.Exit.info ~doc:"on command line parsing errors."
+      Libangou.ExitCode.angou_parsing_options_error;
+  ]

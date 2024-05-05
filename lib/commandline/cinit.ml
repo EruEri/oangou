@@ -54,7 +54,7 @@ struct
     ]
 
   let cmd run =
-    let info = Cmd.info ~doc ~man name in
+    let info = Cmd.info ~exits:Ccommon.exits ~doc ~man name in
     Cmd.v info @@ term_cmd run
 
   let run t =

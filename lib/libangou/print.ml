@@ -30,6 +30,8 @@ let to_string = function
       sprintf "Unknown peer \"%s\"" string
   | DecryptionOangouError ->
       "Decryption Error, you probabily mistyped your password"
+  | DecryptMessageError ->
+      "Unable to decrypt the message"
   | MirageCryptoError mirage_error ->
       Format.asprintf "%a" Mirage_crypto_ec.pp_error mirage_error
 
