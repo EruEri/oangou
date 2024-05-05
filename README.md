@@ -5,6 +5,29 @@ A program to encrypt data, send it over an channel, and decrypt it on the other 
 `oangou` works by using public and private keys and the **Diffie–Hellman** key-exchange protocol.
 
 
+## Installation
+
+First you will need to install those opam packages.
+```sh
+$ opam install dune xdg yojson cmdliner ppx_deriving_yojson mirage_crypto_ec
+```
+
+By default the prefix install is `/usr/local`. So oangou binary is installed in `/usr/local/bin` and the man pages in `/usr/local/share/man`. 
+But the `make install` rule reacts to 3 variables:
+- `PREFIX`: 
+  - default: `/usr/local`
+- `BINDIR`: 
+    - default: `$(PREFIX)/bin`
+- `MANDIR`: 
+    - default: `$(PREFIX)/share/man`
+
+```sh
+$ git clone https://github.com/EruEri/oangou
+$ cd oangou
+$ make 
+$ make install 
+```
+
 ## Initialization
 
 To start with oangou, you first need to initialize it
