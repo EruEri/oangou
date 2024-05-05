@@ -54,12 +54,12 @@
 
 (rule
  (with-stdout-to
-  oangou-decrypt-keys.1
-  (run %{bin:oangou} decrypt keys --help=groff)))
+  oangou-export-keys.1
+  (run %{bin:oangou} export keys --help=groff)))
 
 (install
  (section man)
- (files oangou-decrypt-keys.1))
+ (files oangou-export-keys.1))
 
 (rule
  (with-stdout-to
