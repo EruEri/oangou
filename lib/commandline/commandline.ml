@@ -104,7 +104,16 @@ struct
         );
     ]
 
-  let info = Cmd.info ~doc ~version ~man name
+  let exits =
+    [
+      Cmd.Exit.info ~doc:"on success." Libangou.ExitCode.angou_success;
+      Cmd.Exit.info ~doc:"on $(mname) errors." Libangou.ExitCode.angou_error;
+      Cmd.Exit.info ~doc:"on internal errors." Libangou.ExitCode.any_other_error;
+      Cmd.Exit.info ~doc:"on command line parsing errors."
+        Libangou.ExitCode.angou_parsing_options_error;
+    ]
+
+  let info = Cmd.info ~exits ~doc ~version ~man name
 
   let subcommands =
     let module Cadd = Cadd.Make (AEAD) (Dh_dsa) (Hash) in
@@ -127,5 +136,25 @@ struct
         Crename.command;
       ]
 
-  let eval () = Cmd.eval ~catch:true subcommands
+  let eval () =
+    match Cmd.eval_value ~catch:false subcommands with
+    | Ok _ ->
+        0
+    | Error (`Parse | `Term) ->
+        Libangou.ExitCode.angou_parsing_options_error
+    | Error `Exn ->
+        Libangou.ExitCode.any_other_error
+    | exception Libangou.Error.AngouError e ->
+        let () =
+          prerr_endline @@ Libangou.Print.string_of_color_oangou_error e
+        in
+        Libangou.ExitCode.angou_error
+    | exception e ->
+        let massage = Printexc.to_string_default e in
+        let () =
+          Printf.eprintf "%s: %s\n%!"
+            (Util.Repr.sprintf Util.Repr.fg_red "Interal error")
+            massage
+        in
+        Libangou.ExitCode.any_other_error
 end

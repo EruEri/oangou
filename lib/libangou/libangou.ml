@@ -27,3 +27,5 @@ end
 module Config = Config
 module Error = Error
 module Input = Input
+module Print = Print
+module ExitCode = Misc.ExitCode

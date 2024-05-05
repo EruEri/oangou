@@ -15,9 +15,9 @@
 (*                                                                                            *)
 (**********************************************************************************************)
 
-module FileSys = FileSys
-module Io = Io
-module Ustring = Ustring
-module Misc = Misc
-module Seed = Seed
-module Repr = Repr
+module ExitCode = struct
+  let angou_success = 0
+  let angou_error = 1
+  let any_other_error = 2
+  let angou_parsing_options_error = 3
+end

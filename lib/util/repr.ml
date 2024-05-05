@@ -15,9 +15,10 @@
 (*                                                                                            *)
 (**********************************************************************************************)
 
-module FileSys = FileSys
-module Io = Io
-module Ustring = Ustring
-module Misc = Misc
-module Seed = Seed
-module Repr = Repr
+let fg_red = 31
+let fg_yellow = 33
+let fg_magenta = 35
+let ascii_color_reset = "\u{001B}[0m"
+
+let sprintf color s =
+  Printf.sprintf "\u{001B}[%um%s%s" color s ascii_color_reset

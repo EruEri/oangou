@@ -15,9 +15,33 @@
 (*                                                                                            *)
 (**********************************************************************************************)
 
-module FileSys = FileSys
-module Io = Io
-module Ustring = Ustring
-module Misc = Misc
-module Seed = Seed
-module Repr = Repr
+open Printf
+
+let to_string = function
+  | Error.AngouAlreadyConfigured ->
+      sprintf "%s is already configured" Config.angou_name
+  | AngouNotConfigured ->
+      sprintf "%s is not configured" Config.angou_name
+  | GetPasswordError ->
+      "getpass(3) failed"
+  | PasswordNotMatched ->
+      "Passwords doesn't match"
+  | UnknwonPeer string ->
+      sprintf "Unknown peer \"%s\"" string
+  | DecryptionOangouError ->
+      "Decryption Error, you probabily mistyped your password"
+  | MirageCryptoError mirage_error ->
+      Format.asprintf "%a" Mirage_crypto_ec.pp_error mirage_error
+
+let string_of_color_oangou_error e =
+  Printf.sprintf "%s : %s"
+    (Util.Repr.sprintf Util.Repr.fg_red "error")
+    (to_string e)
+
+let register_oangou_error () =
+  Printexc.register_printer (function
+    | Error.AngouError e ->
+        Option.some @@ Printf.sprintf "\n%s" @@ string_of_color_oangou_error e
+    | _ ->
+        None
+    )
