@@ -102,7 +102,7 @@ struct
       | Ok () ->
           ()
       | Error e ->
-          Libangou.Error.Exn.mirage_crypto_error e
+          Libangou.Error.Exn.angou_error_raise e
     in
     ()
 

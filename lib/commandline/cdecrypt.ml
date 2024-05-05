@@ -101,7 +101,7 @@ struct
     let () =
       match result with
       | Error e ->
-          Libangou.Error.Exn.mirage_crypto_error e
+          Libangou.Error.Exn.angou_error_raise e
       | Ok None ->
           failwith "Fail to decrypt"
       | Ok (Some ()) ->

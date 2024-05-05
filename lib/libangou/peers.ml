@@ -139,14 +139,13 @@ struct
 
   let load ?(from = Config.angou_keys_file) ~key () =
     let content = Util.Io.readall_filename from in
-    let data =
-      match Crypto.decrypt ~key content with
-      | None ->
-          failwith "Is None todo"
-      | Some data ->
-          Cstruct.to_string data
-    in
-    Serialized.of_string data
+    match Crypto.decrypt ~key content with
+    | None ->
+        Error Error.DecryptionOangouError
+    | Some data ->
+        let data = Cstruct.to_string data in
+        Result.map_error (fun e -> Error.MirageCryptoError e)
+        @@ Serialized.of_string data
 
   let shared_secret peer peers =
     peers.peers |> PeersMap.find_opt peer

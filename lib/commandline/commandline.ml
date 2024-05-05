@@ -20,6 +20,7 @@ module Make
     (Dh_dsa : Mirage_crypto_ec.Dh_dsa)
     (Hash : Mirage_crypto.Hash.S) =
 struct
+  module LibangouI = Libangou.Make (AEAD) (Dh_dsa) (Hash)
   open Cmdliner
 
   type t = { change_master_password : bool } [@@unboxed]
@@ -35,35 +36,38 @@ struct
     Term.(const combine $ term_change_master_password)
 
   let run t =
-    let { change_master_password = _ } = t in
-    (* let () = Libcithare.Manager.check_initialized () in
-       let () =
-         match change_master_password with
-         | false ->
-             ()
-         | true ->
-             let master_password = Libcithare.Input.ask_password_encrypted () in
-             let manager = Libcithare.Manager.decrypt master_password in
-             let pass1 =
-               Libcithare.Input.ask_password
-                 ~prompt:Libcithare.Input.Prompt.master_new_password ()
-             in
-             let pass2 =
-               Libcithare.Input.ask_password
-                 ~prompt:Libcithare.Input.Prompt.master_confirm_new_password ()
-             in
-             let pass =
-               match pass1 = pass2 with
-               | true ->
-                   pass1
-               | false ->
-                   raise @@ Libcithare.Error.unmatched_password
-             in
-             let () = Libcithare.Manager.encrypt ~encrypt_key:true pass manager in
-             let () = Printf.printf "Master password sucessfully changed\n%!" in
-             ()
-       in *)
-    ()
+    let { change_master_password } = t in
+    let () = Libangou.Config.check_initialized () in
+    match change_master_password with
+    | false ->
+        ()
+    | true ->
+        let master_password = Libangou.Input.ask_password () in
+        let angou = LibangouI.Peers.load ~key:master_password () in
+        let angou =
+          match angou with
+          | Ok angou ->
+              angou
+          | Error e ->
+              Libangou.Error.Exn.angou_error_raise e
+        in
+        let pass1 =
+          Libangou.Input.ask_password
+            ~prompt:Libangou.Input.Prompt.master_new_password ()
+        in
+        let pass2 =
+          Libangou.Input.ask_password
+            ~prompt:Libangou.Input.Prompt.master_confirm_new_password ()
+        in
+        let new_password =
+          match pass1 = pass2 with
+          | true ->
+              pass1
+          | false ->
+              Libangou.Error.Exn.password_not_matched ()
+        in
+        let _ = LibangouI.Peers.save ~key:new_password angou in
+        Printf.printf "Master password sucessfully changed\n%!"
 
   let default = term_cmd run
   let name = Libangou.Config.angou_name

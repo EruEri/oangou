@@ -65,16 +65,19 @@ struct
     let password = Libangou.Input.ask_password () in
     let public_key = Util.Io.read_content ?file:public_key () in
     let ( >>= ) = Result.bind in
+    let ( <<? ) e value = Result.map_error (Fun.const e) value in
     let angou =
       LibangouI.Peers.load ~key:password ()
-      >>= LibangouI.Peers.add ~hexa peer public_key
+      >>= fun angou ->
+      Libangou.Error.DecryptionOangouError
+      <<? LibangouI.Peers.add ~hexa peer public_key angou
     in
     let angou =
       match angou with
       | Ok angou ->
           angou
-      | Error mirage_error ->
-          Libangou.Error.Exn.mirage_crypto_error mirage_error
+      | Error e ->
+          Libangou.Error.Exn.angou_error_raise e
     in
     let _ = LibangouI.Peers.save ~key:password angou in
     ()
