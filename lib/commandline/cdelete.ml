@@ -50,9 +50,13 @@ struct
     in
     match LibangouI.Peers.PeersMap.is_empty deleted with
     | true ->
-        Printf.eprintf "No peers deleted"
+        Printf.eprintf "No peers deleted\n"
     | false ->
-        LibangouI.Peers.save ~key angou
+        let () = LibangouI.Peers.save ~key angou in
+        let () = print_endline "Peers deleted" in
+        LibangouI.Peers.PeersMap.iter
+          (fun s _ -> Printf.printf "-%s\n" s)
+          deleted
 
   let run t =
     let () = Libangou.Config.check_initialized () in
