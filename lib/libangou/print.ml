@@ -22,6 +22,8 @@ let to_string = function
       sprintf "%s is already configured" Config.angou_name
   | AngouNotConfigured ->
       sprintf "%s is not configured" Config.angou_name
+  | CreateFileError path ->
+      sprintf "Unable to crate file/directory at \"%s\"" path
   | GetPasswordError ->
       "getpass(3) failed"
   | PasswordNotMatched ->

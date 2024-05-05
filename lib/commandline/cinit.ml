@@ -75,7 +75,7 @@ struct
       | Ok () ->
           ()
       | Error s ->
-          failwith s
+          Libangou.Error.Exn.create_file_error s
     in
     let () =
       match force with
