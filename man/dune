@@ -78,3 +78,12 @@
 (install
  (section man)
  (files oangou-list.1))
+
+(rule
+ (with-stdout-to
+  oangou-rename.1
+  (run %{bin:oangou} rename --help=groff)))
+
+(install
+ (section man)
+ (files oangou-rename.1))
