@@ -24,7 +24,7 @@
  It allows to encrypt content and share it with a peer. \
  It uses the Elliptic curve Diffie–Hellman to generate a public/private keys \
  and the generated shared secret with the public keys of the peer")
- (depends (ocaml (>= "4.14.0")) dune xdg (cmdliner (>= "1.1.0"))  (ppx_deriving_yojson (>= "3.5.3")) (yojson (>= "2.0.0")) (cmdliner (>= "1.1.0")) mirage_crypto_ec )
+ (depends (ocaml (>= "4.14.0")) dune xdg (cmdliner (>= "1.1.0"))  (ppx_deriving_yojson (>= "3.5.3")) (yojson (>= "2.0.0")) (cmdliner (>= "1.1.0")) mirage-crypto-ec)
  (tags (encryption)))
 
 ; See the complete stanza docs at https://dune.readthedocs.io/en/stable/dune-files.html#dune-project
