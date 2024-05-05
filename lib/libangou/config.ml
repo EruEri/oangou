@@ -16,7 +16,7 @@
 (**********************************************************************************************)
 
 let angou_name = "oangou"
-let version = "0.1.0"
+let version = "0.1.0-1"
 let ( / ) = Filename.concat
 let xdg = Xdg.create ~env:Sys.getenv_opt ()
 let xdg_data = Xdg.data_dir xdg
