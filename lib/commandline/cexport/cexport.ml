@@ -24,7 +24,7 @@ struct
   module LibangouI = Libangou.Make (AEAD) (Dh_dsa) (Hash)
 
   let name = "export"
-  let doc = "export information from $(iname)"
+  let doc = "export information from $(mname)"
   let man = []
   let info = Cmd.info ~doc name
 

@@ -4,21 +4,21 @@ version: "0.1.0"
 synopsis: "A content encryptor"
 description:
   "Oangou is a encryption tool. It allows to encrypt content and share it with a peer. It uses the Elliptic curve Diffie–Hellman to generate a public/private keys and the generated shared secret with the public keys of the peer"
-maintainer: ["EruEri"]
-authors: ["EruEri"]
-license: "GPL-3.0"
-tags: ["topics" "to describe" "your" "project"]
+maintainer: ["EruEri <ndiayeyves@gmail.com>"]
+authors: ["EruEri <ndiayeyves@gmail.com>"]
+license: "GPL-3.0-or-later"
+tags: ["encryption"]
 homepage: "https://github.com/EruEri/oangou"
 bug-reports: "https://github.com/EruEri/oangou/issues"
 depends: [
-  "ocaml"
+  "ocaml" {>= "4.14.0"}
   "dune" {>= "3.10"}
-  "cmdliner"
+  "xdg"
+  "cmdliner" {>= "1.1.0"}
   "ppx_deriving_yojson" {>= "3.5.3"}
   "yojson" {>= "2.0.0"}
   "cmdliner" {>= "1.1.0"}
   "mirage_crypto_ec"
-  "xdg"
   "odoc" {with-doc}
 ]
 build: [

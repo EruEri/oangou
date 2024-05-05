@@ -68,7 +68,7 @@ struct
   let default = term_cmd run
   let name = Libangou.Config.angou_name
   let version = Libangou.Config.version
-  let doc = "A file encryptor"
+  let doc = "A content encryptor"
 
   let man =
     [
@@ -77,6 +77,27 @@ struct
       `P
         "It allows you to share encrypted file on one hand and to decrypt it \
          on the other.";
+      `P
+        "$(mname) works by using public and private keys and the \
+         Diffie–Hellman key-exchange protocol";
+      `P
+        "To use $(mname), your need to initialize it. Use the $(mname) init \
+         subcommand";
+      `P
+        "To encrypt and decrypt messages, you need add the public key of the \
+         peer. The key can be exported with $(b,oangou-export-keys)(1) and be \
+         added thanks to $(b,oangou-add)(1)";
+      `S Manpage.s_examples;
+      `I
+        ( "To encrypt the message \"$(b,Hello alice)\" for a peer name \
+           $(b,alice), from stdin, in a hexadecimal string",
+          "$(b,echo \"Hello alice\" | oangou encrypt -x -p alice)"
+        );
+      `I
+        ( "To decrypt a message send by a peer named $(b,chloe), stored in a \
+           file name $(b,secret.txt)",
+          "$(b,oangou decrypt -f secret.txt -p chloe)"
+        );
     ]
 
   let info = Cmd.info ~doc ~version ~man name

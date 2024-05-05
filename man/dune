@@ -1,0 +1,80 @@
+(rule
+ (with-stdout-to
+  oangou.1
+  (run %{bin:oangou} --help=groff)))
+
+(install
+ (section man)
+ (files oangou.1))
+
+(rule
+ (with-stdout-to
+  oangou-add.1
+  (run %{bin:oangou} add --help=groff)))
+
+(install
+ (section man)
+ (files oangou-add.1))
+
+(rule
+ (with-stdout-to
+  oangou-decrypt.1
+  (run %{bin:oangou} decrypt --help=groff)))
+
+(install
+ (section man)
+ (files oangou-decrypt.1))
+
+(rule
+ (with-stdout-to
+  oangou-delete.1
+  (run %{bin:oangou} delete --help=groff)))
+
+(install
+ (section man)
+ (files oangou-delete.1))
+
+(rule
+ (with-stdout-to
+  oangou-encrypt.1
+  (run %{bin:oangou} encrypt --help=groff)))
+
+(install
+ (section man)
+ (files oangou-encrypt.1))
+
+(rule
+ (with-stdout-to
+  oangou-export.1
+  (run %{bin:oangou} export --help=groff)))
+
+(install
+ (section man)
+ (files oangou-export.1))
+
+(rule
+ (with-stdout-to
+  oangou-decrypt-keys.1
+  (run %{bin:oangou} decrypt keys --help=groff)))
+
+(install
+ (section man)
+ (files oangou-decrypt-keys.1))
+
+(rule
+ (with-stdout-to
+  oangou-init.1
+  (run %{bin:oangou} init --help=groff)))
+
+(install
+ (section man)
+ (files oangou-init.1))
+
+(rule
+ (with-stdout-to
+  oangou-list.1
+  (run %{bin:oangou} list --help=groff)))
+
+(install
+ (section man)
+ (files oangou-list.1))

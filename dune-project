@@ -9,11 +9,11 @@
 (source
  (github EruEri/oangou))
 
-(authors "EruEri")
+(authors "EruEri <ndiayeyves@gmail.com>")
 
-(maintainers "EruEri")
+(maintainers "EruEri <ndiayeyves@gmail.com>")
 
-(license GPL-3.0)
+(license GPL-3.0-or-later)
 
 ; (documentation https://url/to/documentation)
 
@@ -24,8 +24,7 @@
  It allows to encrypt content and share it with a peer. \
  It uses the Elliptic curve Diffie–Hellman to generate a public/private keys \
  and the generated shared secret with the public keys of the peer")
- (depends ocaml dune cmdliner  (ppx_deriving_yojson (>= "3.5.3")) (yojson (>= "2.0.0")) (cmdliner (>= "1.1.0")) mirage_crypto_ec xdg)
- (tags
-  (topics "to describe" your project)))
+ (depends (ocaml (>= "4.14.0")) dune xdg (cmdliner (>= "1.1.0"))  (ppx_deriving_yojson (>= "3.5.3")) (yojson (>= "2.0.0")) (cmdliner (>= "1.1.0")) mirage_crypto_ec )
+ (tags (encryption)))
 
 ; See the complete stanza docs at https://dune.readthedocs.io/en/stable/dune-files.html#dune-project

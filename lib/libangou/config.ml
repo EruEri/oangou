@@ -16,14 +16,7 @@
 (**********************************************************************************************)
 
 let angou_name = "oangou"
-
-let version =
-  match Build_info.V1.version () with
-  | Some s ->
-      Build_info.V1.Version.to_string s
-  | None ->
-      "[n/a]"
-
+let version = "0.1.0"
 let ( / ) = Filename.concat
 let xdg = Xdg.create ~env:Sys.getenv_opt ()
 let xdg_data = Xdg.data_dir xdg
