@@ -96,7 +96,7 @@ SYNOPSIS
        oangou encrypt [OPTION]…
 
 OPTIONS
-       -f <FILE> (absent=stdin)
+       -i <FILE> (absent=stdin)
            Encrypt a specific file
 
        -o <OUTFILE> (absent=stdout)
@@ -120,7 +120,7 @@ SYNOPSIS
        oangou decrypt [OPTION]…
 
 OPTIONS
-       -f <FILE> (absent=stdin)
+       -i <FILE> (absent=stdin)
            Decrypt a specific file
 
        -o <OUTFILE> (absent=stdout)
